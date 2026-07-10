@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Rafaela • Treino</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FBF6F3;
+    --surface:#FFFFFF;
+    --card:#FFFFFF;
+    --card2:#FDF3F0;
+    --border:#F1DEE1;
+    --rose:#D98CA3;
+    --rose-dark:#B96380;
+    --rose-glow:rgba(217,140,163,0.18);
+    --gold:#C9A227;
+    --gold-light:#EAD9A0;
+    --text:#3A2B30;
+    --muted:#A48D93;
+    --faint:#DDC8CC;
+    --good:#7FAE8C;
+    --good-glow:rgba(127,174,140,0.18);
+    --danger:#C97575;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{background:var(--bg);color:var(--text);font-family:'Jost',sans-serif;font-weight:300;overflow-x:hidden;}
+  h1,h2,h3,.display{font-family:'Cormorant Garamond',serif;}
+  #splash{
+    position:fixed;inset:0;background:var(--bg);z-index:999;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    transition:opacity .5s ease, visibility .5s ease;
+  }
+  #splash.hide{opacity:0;visibility:hidden;}
+  .splash-mark{
+    width:66px;height:66px;border-radius:50%;
+    background:linear-gradient(145deg,var(--rose),var(--gold));
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:400;font-size:30px;color:#fff;
+    box-shadow:0 8px 30px var(--rose-glow);
+    margin-bottom:18px;
+  }
+  .splash-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;font-size:24px;letter-spacing:0.02em;color:var(--rose-dark);}
+  .splash-sub{color:var(--muted);font-size:12px;margin-top:6px;letter-spacing:0.04em;}
+
+  #app{opacity:0;transition:opacity .4s ease;padding-bottom:92px;min-height:100vh;}
+  #app.visible{opacity:1;}
+
+  header.topbar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(251,246,243,0.92);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+    padding:16px 18px 14px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .topbar-left{display:flex;align-items:center;gap:10px;}
+  .topbar-mark{width:32px;height:32px;border-radius:50%;background:linear-gradient(145deg,var(--rose),var(--gold));display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond';font-style:italic;font-weight:500;font-size:14px;color:#fff;}
+  .topbar-name{font-family:'Cormorant Garamond';font-style:italic;font-weight:500;font-size:16px;color:var(--rose-dark);}
+  .topbar-sub{font-size:10px;color:var(--muted);letter-spacing:0.04em;}
+  .status-dot{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 6px var(--good);}
+  .status-wrap{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);}
+
+  .page{display:none;padding:18px;animation:fadeIn .3s ease;}
+  .page.active{display:block;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .section-eyebrow{font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:0.12em;font-weight:600;margin-bottom:4px;}
+  .section-title{font-family:'Cormorant Garamond';font-style:italic;font-size:23px;font-weight:500;margin-bottom:14px;color:var(--text);}
+
+  .treino-switch{display:flex;gap:8px;margin-bottom:16px;}
+  .treino-btn{
+    flex:1;padding:10px 0;text-align:center;border-radius:12px;
+    background:var(--card);border:1px solid var(--border);
+    font-family:'Cormorant Garamond';font-weight:500;font-size:15px;color:var(--muted);
+    cursor:pointer;transition:all .2s;
+  }
+  .treino-btn.active{background:linear-gradient(145deg,var(--rose),var(--rose-dark));color:#fff;border-color:transparent;box-shadow:0 4px 16px var(--rose-glow);}
+
+  .week-nav{
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--surface);border:1px solid var(--border);border-radius:14px;
+    padding:10px 14px;margin-bottom:16px;
+  }
+  .week-nav button{
+    width:34px;height:34px;border-radius:10px;background:var(--card2);border:1px solid var(--border);
+    color:var(--rose-dark);font-size:16px;cursor:pointer;
+  }
+  .week-nav button:disabled{opacity:0.3;cursor:not-allowed;}
+  .week-label{font-family:'Cormorant Garamond';font-style:italic;font-weight:500;font-size:15px;}
+  .week-sub{font-size:10px;color:var(--muted);text-align:center;}
+
+  .tip-card{
+    background:linear-gradient(135deg,#F7E9DB,#F3D9DF);
+    border:1px solid var(--gold-light);border-radius:14px;padding:14px 16px;margin-bottom:18px;
+    display:flex;gap:12px;align-items:flex-start;
+  }
+  .tip-icon{font-size:18px;line-height:1;}
+  .tip-text{font-size:12.5px;color:#5c4148;line-height:1.55;}
+  .tip-label{font-size:10px;color:var(--rose-dark);text-transform:uppercase;letter-spacing:0.08em;font-weight:700;margin-bottom:3px;}
+
+  .ex-card{
+    background:var(--card);border:1px solid var(--border);border-radius:16px;
+    padding:14px 16px;margin-bottom:12px;transition:border-color .2s;
+    box-shadow:0 2px 10px rgba(217,140,163,0.05);
+  }
+  .ex-card.done{border-color:var(--good);background:linear-gradient(180deg,var(--good-glow),var(--card));}
+  .ex-card.cardio{background:linear-gradient(180deg,#FCEFE0,var(--card));}
+  .ex-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+  .ex-name-wrap{display:flex;align-items:flex-start;gap:10px;flex:1;}
+  .checkbox{
+    width:24px;height:24px;border-radius:50%;border:2px solid var(--faint);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;
+    transition:all .2s;margin-top:1px;
+  }
+  .checkbox.checked{background:var(--good);border-color:var(--good);}
+  .checkbox.checked::after{content:"✓";color:#fff;font-size:13px;font-weight:700;}
+  .ex-name{font-family:'Cormorant Garamond';font-weight:500;font-size:15px;line-height:1.3;}
+  .ex-meta{font-size:11px;color:var(--muted);margin-top:3px;}
+  .ex-obj{font-size:11px;color:#a87f88;margin-top:2px;font-style:italic;}
+  .rpe-tag{
+    font-size:10px;font-weight:600;padding:3px 9px;border-radius:8px;white-space:nowrap;
+    background:var(--card2);color:var(--gold);border:1px solid var(--gold-light);
+  }
+  .load-row{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+  .load-label{font-size:11px;color:var(--muted);margin-right:auto;}
+  .load-btn{
+    width:32px;height:32px;border-radius:10px;background:var(--card2);border:1px solid var(--border);
+    color:var(--rose-dark);font-size:17px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+  .load-val{font-family:'Cormorant Garamond';font-size:16px;font-weight:500;min-width:56px;text-align:center;}
+
+  .finish-btn{
+    width:100%;padding:16px;border-radius:16px;border:none;margin-top:8px;
+    background:linear-gradient(135deg,var(--rose),var(--rose-dark));
+    color:#fff;font-family:'Cormorant Garamond';font-weight:500;font-size:15px;letter-spacing:0.03em;
+    cursor:pointer;box-shadow:0 6px 20px var(--rose-glow);
+  }
+  .finish-btn:active{transform:scale(0.98);}
+  .finish-btn.finished{background:var(--good);box-shadow:none;}
+
+  .search-box{
+    width:100%;padding:12px 14px;border-radius:14px;background:var(--card);
+    border:1px solid var(--border);color:var(--text);font-size:13px;margin-bottom:16px;font-family:'Jost';
+  }
+  .search-box::placeholder{color:var(--faint);}
+
+  .rpe-scale{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:20px;}
+  .rpe-item{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:12.5px;}
+  .rpe-num{
+    width:28px;height:28px;border-radius:50%;background:var(--card2);
+    display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond';font-weight:500;font-size:12px;color:var(--gold);flex-shrink:0;border:1px solid var(--gold-light);
+  }
+  .rpe-desc{color:#6b545a;}
+  .rpe-note{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.5;border-top:1px solid var(--border);padding-top:10px;}
+
+  .guide-card{background:var(--card);border:1px solid var(--border);border-radius:16px;margin-bottom:10px;overflow:hidden;}
+  .guide-head{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+  .guide-head .ex-name{margin:0;}
+  .guide-chevron{color:var(--rose-dark);font-size:14px;transition:transform .25s;}
+  .guide-chevron.open{transform:rotate(90deg);}
+  .guide-body{max-height:0;overflow:hidden;transition:max-height .3s ease;}
+  .guide-body.open{max-height:500px;}
+  .guide-body-inner{padding:0 16px 16px;}
+  .guide-row{margin-bottom:10px;}
+  .guide-row-label{font-size:10px;color:var(--rose-dark);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:3px;}
+  .guide-row-text{font-size:12.5px;color:#6b545a;line-height:1.5;}
+
+  .eval-week-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px;}
+  .eval-week-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .eval-week-title{font-family:'Cormorant Garamond';font-style:italic;font-size:18px;font-weight:500;color:var(--text);}
+  .eval-week-badge{font-size:10px;font-weight:600;padding:4px 12px;border-radius:20px;text-transform:uppercase;letter-spacing:0.04em;background:var(--card2);color:var(--muted);}
+  .eval-week-badge.saved{background:var(--good-glow);color:var(--good);}
+
+  .eval-cat-block{margin-bottom:14px;}
+  .eval-cat-name{font-family:'Cormorant Garamond';font-weight:500;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;color:var(--rose-dark);margin-bottom:8px;}
+  .nota-row{display:flex;gap:8px;}
+  .nota-btn{
+    flex:1;aspect-ratio:1;border-radius:12px;background:var(--card2);border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond';font-weight:500;font-size:15px;color:var(--muted);
+    cursor:pointer;transition:all .15s;
+  }
+  .nota-btn.selected{background:var(--rose);color:#fff;border-color:var(--rose);box-shadow:0 4px 12px var(--rose-glow);}
+
+  .checkin-block{margin-bottom:10px;}
+  .checkin-q{font-size:12px;color:var(--muted);margin-bottom:5px;}
+  .checkin-input{
+    width:100%;padding:10px 13px;border-radius:10px;background:var(--card2);border:1px solid var(--border);
+    color:var(--text);font-size:12.5px;font-family:'Jost';margin-bottom:10px;
+  }
+
+  .eval-week-obs{
+    width:100%;padding:11px 14px;border-radius:12px;background:var(--card2);border:1px solid var(--border);
+    color:var(--text);font-size:13px;font-family:'Jost';resize:none;margin-top:4px;margin-bottom:14px;
+  }
+  .eval-week-save{
+    width:100%;padding:14px;border-radius:14px;border:none;
+    background:linear-gradient(135deg,var(--rose),var(--gold));
+    color:#fff;font-family:'Cormorant Garamond';font-weight:500;font-size:14px;letter-spacing:0.03em;cursor:pointer;
+  }
+  .eval-week-save.saved{background:var(--good);}
+
+  .field-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin:16px 0 6px;}
+  .field-input{
+    width:100%;padding:11px 14px;border-radius:12px;background:var(--card2);border:1px solid var(--border);
+    color:var(--text);font-size:13px;font-family:'Jost';resize:none;
+  }
+  .save-btn{
+    width:100%;padding:15px;border-radius:16px;border:none;margin-top:18px;
+    background:linear-gradient(135deg,var(--rose),var(--rose-dark));
+    color:#fff;font-family:'Cormorant Garamond';font-weight:500;font-size:14px;letter-spacing:0.03em;cursor:pointer;
+  }
+  .save-btn.saved{background:var(--good);}
+
+  .profile-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:4px 16px;margin-bottom:16px;}
+  .info-row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--border);gap:10px;}
+  .info-row:last-child{border-bottom:none;}
+  .info-key{font-size:12px;color:var(--muted);}
+  .info-val{font-family:'Cormorant Garamond';font-size:14px;font-weight:500;text-align:right;}
+  .alert-card{
+    background:rgba(201,117,117,0.08);border:1px solid rgba(201,117,117,0.3);border-radius:14px;
+    padding:13px 15px;margin-bottom:16px;display:flex;gap:10px;
+  }
+  .alert-card .tip-text{color:#8a4c4c;}
+  .alert-card .tip-label{color:var(--danger);}
+
+  .measure-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+  .measure-item{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;}
+  .measure-key{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;}
+  .measure-val{font-family:'Cormorant Garamond';font-size:17px;font-weight:500;color:var(--rose-dark);margin-top:2px;}
+
+  .weight-editor{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;text-align:center;}
+  .weight-editor .cur-weight{font-family:'Cormorant Garamond';font-style:italic;font-size:36px;font-weight:500;color:var(--rose-dark);margin:8px 0;}
+  .weight-controls{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:10px;}
+  .weight-btn{
+    width:44px;height:44px;border-radius:14px;background:var(--card2);border:1px solid var(--border);
+    color:var(--rose-dark);font-size:20px;cursor:pointer;
+  }
+
+  .bem-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;}
+  .bem-title{font-family:'Cormorant Garamond';font-style:italic;font-weight:500;font-size:16px;color:var(--rose-dark);margin-bottom:10px;}
+  .bem-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px;}
+  .bem-item:last-child{border-bottom:none;}
+  .bem-item-name{color:var(--text);}
+  .bem-item-time{color:var(--gold);font-weight:500;white-space:nowrap;margin-left:10px;text-align:right;}
+
+  nav.tabbar{
+    position:fixed;bottom:0;left:0;right:0;z-index:60;
+    background:rgba(255,255,255,0.97);backdrop-filter:blur(12px);
+    border-top:1px solid var(--border);
+    display:flex;padding:9px 6px calc(9px + env(safe-area-inset-bottom));
+  }
+  .tab-item{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+    color:var(--faint);cursor:pointer;padding:4px 0;
+  }
+  .tab-item.active{color:var(--rose-dark);}
+  .tab-icon{width:20px;height:20px;}
+  .tab-label{font-size:9.5px;font-weight:500;letter-spacing:0.02em;}
+
+  .toast{
+    position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--good);color:#fff;padding:12px 22px;border-radius:30px;
+    font-family:'Cormorant Garamond';font-weight:500;font-size:13px;z-index:200;opacity:0;
+    transition:all .3s ease;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,0.15);
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .empty-guide{text-align:center;color:var(--muted);font-size:13px;padding:30px 0;}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="splash-mark">R</div>
+  <div class="splash-title">Rafaela</div>
+  <div class="splash-sub">Preparando seu treino...</div>
+</div>
+
+<div id="app">
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-mark">R</div>
+      <div>
+        <div class="topbar-name">Rafaela</div>
+        <div class="topbar-sub">Emagrecimento & musculação</div>
+      </div>
+    </div>
+    <div class="status-wrap"><span class="status-dot"></span>Sincronizado</div>
+  </header>
+
+  <!-- TREINO -->
+  <div class="page active" id="page-treino">
+    <div class="section-eyebrow">Hoje</div>
+    <div class="section-title">Treino</div>
+
+    <div class="treino-switch" id="treino-switch"></div>
+
+    <div class="week-nav">
+      <button id="week-prev" onclick="changeWeek(-1)">‹</button>
+      <div>
+        <div class="week-label" id="week-label">Semana 1</div>
+        <div class="week-sub" id="week-sub">de 12 semanas</div>
+      </div>
+      <button id="week-next" onclick="changeWeek(1)">›</button>
+    </div>
+
+    <div class="tip-card">
+      <div class="tip-icon">🌸</div>
+      <div>
+        <div class="tip-label">Dica importante</div>
+        <div class="tip-text">Aprenda os movimentos com técnica, crie consistência e evite dores excessivas. Intensidade RPE 5–6, com descanso de 75–90 segundos entre séries.</div>
+      </div>
+    </div>
+
+    <div id="ex-container"></div>
+
+    <button class="finish-btn" id="finish-btn" onclick="finishTreino()">Finalizar Treino</button>
+  </div>
+
+  <!-- GUIA -->
+  <div class="page" id="page-guia">
+    <div class="section-eyebrow">Referência</div>
+    <div class="section-title">Guia de Execução</div>
+
+    <div class="rpe-scale">
+      <div class="tip-label" style="margin-bottom:8px;">Escala de intensidade (RPE)</div>
+      <div class="rpe-item"><div class="rpe-num">5</div><div class="rpe-desc">Leve — semanas 1–2</div></div>
+      <div class="rpe-item"><div class="rpe-num">6</div><div class="rpe-desc">Confortável — semanas 1–4</div></div>
+      <div class="rpe-item"><div class="rpe-num">7</div><div class="rpe-desc">Moderado — a partir da semana 3</div></div>
+      <div class="rpe-note">Após a 4ª semana: reavaliar e aumentar carga apenas se executar todos os exercícios com técnica e facilidade.</div>
+    </div>
+
+    <input class="search-box" id="guia-search" placeholder="Buscar exercício..." oninput="renderGuide()">
+    <div id="guia-container"></div>
+  </div>
+
+  <!-- BEM-ESTAR -->
+  <div class="page" id="page-bemestar">
+    <div class="section-eyebrow">Equilíbrio</div>
+    <div class="section-title">Rotina de Bem-estar</div>
+
+    <div class="bem-card">
+      <div class="bem-title">Mobilidade & Alongamentos</div>
+      <div id="bem-mobilidade"></div>
+    </div>
+    <div class="bem-card">
+      <div class="bem-title">Hábitos Diários</div>
+      <div id="bem-habitos"></div>
+    </div>
+    <div class="bem-card">
+      <div class="bem-title">Momento em Família</div>
+      <div id="bem-familia"></div>
+    </div>
+  </div>
+
+  <!-- AVALIAÇÃO -->
+  <div class="page" id="page-avaliacao">
+    <div class="section-eyebrow">Feedback</div>
+    <div class="section-title">Avaliação Semanal</div>
+
+    <div id="eval-container"></div>
+  </div>
+
+  <!-- PERFIL -->
+  <div class="page" id="page-perfil">
+    <div class="section-eyebrow">Aluna</div>
+    <div class="section-title">Perfil</div>
+
+    <div class="alert-card">
+      <div class="tip-icon">⚠️</div>
+      <div>
+        <div class="tip-label">Atenção</div>
+        <div class="tip-text">Pós-parto — uso contínuo de rivaroxabana e início de tirzepatida.</div>
+      </div>
+    </div>
+
+    <div class="profile-card">
+      <div class="info-row"><span class="info-key">Nome</span><span class="info-val">Rafaela</span></div>
+      <div class="info-row"><span class="info-key">Idade</span><span class="info-val">27 anos</span></div>
+      <div class="info-row"><span class="info-key">Altura</span><span class="info-val">1,68 m</span></div>
+      <div class="info-row"><span class="info-key">Rotina</span><span class="info-val">Pós-parto</span></div>
+      <div class="info-row"><span class="info-key">Objetivo</span><span class="info-val">Emagrecimento e condicionamento</span></div>
+    </div>
+
+    <div class="field-label">Medidas iniciais (01/07)</div>
+    <div class="measure-grid">
+      <div class="measure-item"><div class="measure-key">Cintura</div><div class="measure-val">94 cm</div></div>
+      <div class="measure-item"><div class="measure-key">Quadril</div><div class="measure-val">120 cm</div></div>
+      <div class="measure-item"><div class="measure-key">Coxa</div><div class="measure-val">70 cm</div></div>
+      <div class="measure-item"><div class="measure-key">Braço</div><div class="measure-val">34 cm</div></div>
+    </div>
+
+    <div class="field-label">Peso atual</div>
+    <div class="weight-editor">
+      <div class="weight-controls">
+        <button class="weight-btn" onclick="adjustWeight(-0.5)">−</button>
+        <div class="cur-weight" id="cur-weight">88.5<span style="font-size:16px;color:var(--muted);"> kg</span></div>
+        <button class="weight-btn" onclick="adjustWeight(0.5)">+</button>
+      </div>
+    </div>
+    <button class="save-btn" id="weight-save-btn" onclick="saveWeight()">Salvar Peso</button>
+  </div>
+</div>
+
+<nav class="tabbar">
+  <div class="tab-item active" data-page="treino" onclick="switchPage('treino')">
+    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 6.5l11 11M4 9l3-3m10 10l3 3M2 12l4-4m12 8l4 4M6.5 17.5l-3 3m14-17l3 3M9 4l-4 4m11 11l4-4" stroke-linecap="round"/></svg>
+    <div class="tab-label">Treino</div>
+  </div>
+  <div class="tab-item" data-page="guia" onclick="switchPage('guia')">
+    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2.5" stroke-linecap="round"/></svg>
+    <div class="tab-label">Guia</div>
+  </div>
+  <div class="tab-item" data-page="bemestar" onclick="switchPage('bemestar')">
+    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C.5 8 2 4 6 4c2 0 4 1.5 6 4 2-2.5 4-4 6-4 4 0 5.5 4 3.5 8-2.5 4.5-9.5 9-9.5 9z"/></svg>
+    <div class="tab-label">Bem-estar</div>
+  </div>
+  <div class="tab-item" data-page="avaliacao" onclick="switchPage('avaliacao')">
+    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    <div class="tab-label">Avaliação</div>
+  </div>
+  <div class="tab-item" data-page="perfil" onclick="switchPage('perfil')">
+    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+    <div class="tab-label">Perfil</div>
+  </div>
+</nav>
+
+<div class="toast" id="toast">Salvo com sucesso</div>
+
+<script>
+// ── FIREBASE CONFIG ──────────────────────────────────────────────────────
+var FIREBASE_URL = 'https://helloradana-consultoria-default-rtdb.firebaseio.com';
+var ALUNO_ID = 'rafaela';
+var TOTAL_WEEKS = 12;
+
+// ── DATA: EXERCÍCIOS POR TREINO ──────────────────────────────────────────
+var TREINOS = {
+  A: [
+    {id:'a1', nome:'Leg Press', series:'3x', reps:'10–12', obj:'Quadríceps e glúteos', carga:true},
+    {id:'a2', nome:'Agachamento Goblet', series:'3x', reps:'10–12', obj:'Força funcional e estabilidade', carga:true},
+    {id:'a3', nome:'Cadeira Flexora', series:'2x', reps:'12–15', obj:'Posteriores da coxa', carga:true},
+    {id:'a4', nome:'Ponte de Glúteos', series:'2x', reps:'12–15', obj:'Glúteos', carga:false},
+    {id:'a5', nome:'Abdutora', series:'2x', reps:'15', obj:'Glúteo médio', carga:true},
+    {id:'a6', nome:'Dead Bug', series:'2x', reps:'8–10 cada lado', obj:'Estabilidade abdominal', carga:false},
+    {id:'a7', nome:'Bicicleta Ergométrica', series:'30 min', reps:'Zona 2', obj:'Condicionamento e emagrecimento', carga:false, cardio:true}
+  ],
+  B: [
+    {id:'b1', nome:'Puxada Aberta', series:'3x', reps:'10–12', obj:'Costas', carga:true},
+    {id:'b2', nome:'Remada Máquina', series:'3x', reps:'10–12', obj:'Postura', carga:true},
+    {id:'b3', nome:'Supino Máquina', series:'2x', reps:'10–12', obj:'Peitoral', carga:true},
+    {id:'b4', nome:'Desenvolvimento Máquina', series:'2x', reps:'10–12', obj:'Ombros', carga:true},
+    {id:'b5', nome:'Rosca Martelo', series:'2x', reps:'12–15', obj:'Bíceps', carga:true},
+    {id:'b6', nome:'Dead Bug', series:'2x', reps:'8–10 cada lado', obj:'Core', carga:false},
+    {id:'b7', nome:'Bicicleta Ergométrica', series:'30 min', reps:'Zona 2', obj:'Condicionamento', carga:false, cardio:true}
+  ],
+  C: [
+    {id:'c1', nome:'Leg Press Unilateral', series:'3x', reps:'10–12', obj:'Força unilateral', carga:true},
+    {id:'c2', nome:'Elevação Pélvica', series:'3x', reps:'10–12', obj:'Glúteos', carga:false},
+    {id:'c3', nome:'Remada Máquina', series:'2x', reps:'10–12', obj:'Postura', carga:true},
+    {id:'c4', nome:'Crucifixo Inverso Máquina', series:'2x', reps:'12–15', obj:'Ombros posteriores e postura', carga:true},
+    {id:'c5', nome:'Tríceps Corda', series:'2x', reps:'12–15', obj:'Tríceps', carga:true},
+    {id:'c6', nome:'Farmer Walk', series:'2x', reps:'30–45 segundos', obj:'Core e estabilidade', carga:true},
+    {id:'c7', nome:'Bicicleta Ergométrica', series:'30 min', reps:'Zona 2', obj:'Condicionamento', carga:false, cardio:true}
+  ]
+};
+
+// ── DATA: GUIA DE EXECUÇÃO ────────────────────────────────────────────────
+var GUIA = [
+  {nome:'Leg Press', como:'Empurre a plataforma pelos calcanhares sem travar os joelhos.', erro:'Levantar o quadril do banco.', dica:'Controle a descida.'},
+  {nome:'Agachamento Goblet', como:'Halter junto ao peito, desça até onde conseguir mantendo a coluna neutra.', erro:'Inclinar muito o tronco.', dica:'Pense em sentar para trás.'},
+  {nome:'Cadeira Flexora', como:'Flexione os joelhos lentamente e retorne controlando.', erro:'Dar impulso.', dica:'Movimento contínuo.'},
+  {nome:'Ponte de Glúteos', como:'Deitada, eleve o quadril contraindo os glúteos.', erro:'Arquear a lombar.', dica:'Contraia os glúteos no topo.'},
+  {nome:'Abdutora', como:'Empurre os joelhos para fora sem movimentar o tronco.', erro:'Soltar o peso rapidamente.', dica:'Faça pausa de 1 segundo na abertura.'},
+  {nome:'Dead Bug', como:'Mantenha a lombar apoiada no chão enquanto alterna braço e perna.', erro:'Arquear a lombar.', dica:'Expire durante o movimento.'},
+  {nome:'Puxada Aberta', como:'Puxe a barra até a parte superior do peito.', erro:'Puxar atrás da cabeça.', dica:'Feche as escápulas antes de puxar.'},
+  {nome:'Remada Máquina', como:'Puxe trazendo os cotovelos para trás.', erro:'Encolher os ombros.', dica:'Segure 1 segundo no final.'},
+  {nome:'Supino Máquina', como:'Empurre sem travar os cotovelos.', erro:'Tirar os ombros do banco.', dica:'Controle a volta.'},
+  {nome:'Desenvolvimento Máquina', como:'Empurre acima da cabeça sem elevar os ombros.', erro:'Arquear a lombar.', dica:'Abdômen firme.'},
+  {nome:'Rosca Martelo', como:'Flexione os cotovelos mantendo os punhos neutros.', erro:'Balançar o corpo.', dica:'Cotovelos próximos ao tronco.'},
+  {nome:'Leg Press Unilateral', como:'Execute uma perna por vez mantendo o quadril apoiado.', erro:'Girar o quadril.', dica:'Movimento lento.'},
+  {nome:'Elevação Pélvica', como:'Eleve o quadril apertando os glúteos.', erro:'Empurrar com a lombar.', dica:'Pausa de 1 segundo no topo.'},
+  {nome:'Crucifixo Inverso Máquina', como:'Abra os braços mantendo leve flexão dos cotovelos.', erro:'Encolher os ombros.', dica:'Pense em aproximar as escápulas.'},
+  {nome:'Tríceps Corda', como:'Estenda totalmente os cotovelos.', erro:'Mexer os ombros.', dica:'Cotovelos fixos.'},
+  {nome:'Farmer Walk', como:'Caminhe segurando os halteres com postura alta.', erro:'Inclinar o tronco.', dica:'Olhe para frente e mantenha o abdômen firme.'}
+];
+
+// ── DATA: BEM-ESTAR ───────────────────────────────────────────────────────
+var MOBILIDADE = [
+  {nome:'Pernas para cima na parede', tempo:'5 min'},
+  {nome:'Respiração diafragmática', tempo:'2 min'},
+  {nome:'Mobilidade de quadril', tempo:'10 repetições'},
+  {nome:'Mobilidade torácica', tempo:'8 repetições por lado'},
+  {nome:'Alongamento de panturrilha', tempo:'30s cada lado'},
+  {nome:'Alongamento de posteriores', tempo:'30s cada lado'},
+  {nome:'Alongamento de glúteos', tempo:'30s cada lado'},
+  {nome:'Alongamento de peitoral', tempo:'30s'},
+  {nome:'Alongamento cervical', tempo:'30s cada lado'}
+];
+var HABITOS = [
+  {nome:'Caminhar com o bebê', tempo:'10–20 min (dias sem treino)'},
+  {nome:'Beber água', tempo:'Ao longo do dia'},
+  {nome:'Levantar-se e movimentar-se', tempo:'A cada 60–90 min'},
+  {nome:'Fazer a rotina de mobilidade', tempo:'Todos os dias'}
+];
+var FAMILIA = [
+  {nome:'Caminhada com carrinho', tempo:'10–20 min'},
+  {nome:'Alongamentos enquanto o bebê brinca', tempo:'5 min'},
+  {nome:'Respiração profunda ao lado do bebê', tempo:'2 min'},
+  {nome:'Brincadeiras no chão com mudanças de posição', tempo:'5–10 min'}
+];
+
+// ── DATA: AVALIAÇÃO ───────────────────────────────────────────────────────
+var EVAL_CATS = ['Energia','Qualidade do sono','Dores nas pernas','Facilidade para cuidar do bebê','Disposição','Motivação','Cardio','Musculação'];
+var CHECKIN_QS = [
+  'Quantos treinos realizou?',
+  'Fez a rotina de mobilidade?',
+  'Fez os cardios?',
+  'Como foi sua alimentação?',
+  'Como está sua disposição?',
+  'Teve dores após os treinos?',
+  'O que foi mais fácil esta semana?',
+  'O que foi mais difícil?'
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+var state = JSON.parse(localStorage.getItem('rafaela-state') || '{}');
+if (!state.currentTreino) state.currentTreino = 'A';
+if (!state.currentWeek) state.currentWeek = 1;
+if (!state.checks) state.checks = {};
+if (!state.loads) state.loads = {};
+if (!state.finished) state.finished = {};
+if (!state.evalWeek) state.evalWeek = 1;
+if (!state.evalNotas) state.evalNotas = {};
+if (!state.evalObs) state.evalObs = {};
+if (!state.checkin) state.checkin = {};
+if (!state.peso) state.peso = 88.5;
+
+// ── SAVE QUEUE (corrigido) ──────────────────────────────────────────────
+// Antes: cada clique disparava um fetch() PUT independente, na hora. Se a
+// aluna tocasse em vários exercícios rapidamente, essas requisições podiam
+// terminar fora de ordem e uma resposta mais lenta de um clique antigo
+// sobrescrevia no Firebase um estado mais novo, apagando marcações/pesos
+// recentes silenciosamente -- por isso "salvava" na tela mas sumia depois.
+//
+// Agora só existe UM envio por vez: se chega um save novo enquanto o
+// anterior ainda está em andamento, ele espera terminar e reenvia o
+// estado MAIS ATUAL, garantindo ordem correta e nenhuma perda de dado.
+var saveTimer = null;
+var saveInFlight = false;
+var savePendingAfterFlight = false;
+
+function saveState() {
+  state._updated = new Date().toISOString();
+  localStorage.setItem('rafaela-state', JSON.stringify(state));
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(flushSaveToFirebase, 350);
+}
+
+function flushSaveToFirebase() {
+  if (saveInFlight) { savePendingAfterFlight = true; return; }
+  saveInFlight = true;
+  var payload = JSON.stringify(state);
+  fetch(FIREBASE_URL + '/alunos/' + ALUNO_ID + '/state.json', {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: payload
+  }).then(function(res) {
+    if (!res.ok) throw new Error('Firebase respondeu ' + res.status);
+  }).catch(function() {
+    console.warn('Firebase offline, salvo localmente. Tentando de novo em 2s.');
+    setTimeout(function() { saveState(); }, 2000);
+  }).finally(function() {
+    saveInFlight = false;
+    if (savePendingAfterFlight) {
+      savePendingAfterFlight = false;
+      flushSaveToFirebase();
+    }
+  });
+}
+
+async function loadFromFirebase() {
+  try {
+    var res = await fetch(FIREBASE_URL + '/alunos/' + ALUNO_ID + '/state.json');
+    if (res.ok) {
+      var d = await res.json();
+      if (d && d._updated && d._updated > (state._updated || '')) {
+        state = d;
+        localStorage.setItem('rafaela-state', JSON.stringify(state));
+      }
+    }
+  } catch(e) {}
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────
+function switchPage(name) {
+  var pages = document.querySelectorAll('.page');
+  for (var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
+  document.getElementById('page-' + name).classList.add('active');
+
+  var tabs = document.querySelectorAll('.tab-item');
+  for (var j = 0; j < tabs.length; j++) tabs[j].classList.remove('active');
+  document.querySelector('.tab-item[data-page="' + name + '"]').classList.add('active');
+
+  if (name === 'guia') renderGuide();
+  if (name === 'avaliacao') renderEval();
+  if (name === 'bemestar') renderBemEstar();
+}
+
+// ── TREINO ────────────────────────────────────────────────────────────────
+function renderTreinoSwitch() {
+  var wrap = document.getElementById('treino-switch');
+  wrap.innerHTML = '';
+  var keys = ['A','B','C'];
+  for (var i = 0; i < keys.length; i++) {
+    var k = keys[i];
+    var btn = document.createElement('div');
+    btn.className = 'treino-btn' + (state.currentTreino === k ? ' active' : '');
+    btn.textContent = 'Treino ' + k;
+    btn.onclick = (function(kk) { return function() { state.currentTreino = kk; renderTreinoSwitch(); renderExercises(); }; })(k);
+    wrap.appendChild(btn);
+  }
+}
+
+function weekKey() {
+  return state.currentTreino + '-' + state.currentWeek;
+}
+
+function renderExercises() {
+  document.getElementById('week-label').textContent = 'Semana ' + state.currentWeek;
+  document.getElementById('week-sub').textContent = 'de ' + TOTAL_WEEKS + ' semanas — Treino ' + state.currentTreino;
+  document.getElementById('week-prev').disabled = state.currentWeek <= 1;
+  document.getElementById('week-next').disabled = state.currentWeek >= TOTAL_WEEKS;
+
+  var container = document.getElementById('ex-container');
+  container.innerHTML = '';
+  var list = TREINOS[state.currentTreino];
+  var wk = weekKey();
+
+  for (var i = 0; i < list.length; i++) {
+    var ex = list[i];
+    var checkKey = wk + '-' + ex.id;
+    var isChecked = !!state.checks[checkKey];
+    var loadVal = state.loads[ex.id] !== undefined ? state.loads[ex.id] : 0;
+
+    var card = document.createElement('div');
+    card.className = 'ex-card' + (isChecked ? ' done' : '') + (ex.cardio ? ' cardio' : '');
+
+    var metaStr = ex.series + (ex.reps ? ' · ' + ex.reps : '');
+    var rpeLabel = ex.cardio ? 'Zona 2' : 'RPE 5–6';
+
+    var html = '';
+    html += '<div class="ex-top">';
+    html += '<div class="ex-name-wrap">';
+    html += '<div class="checkbox' + (isChecked ? ' checked' : '') + '" data-check="' + checkKey + '"></div>';
+    html += '<div><div class="ex-name">' + ex.nome + '</div><div class="ex-meta">' + metaStr + '</div><div class="ex-obj">' + ex.obj + '</div></div>';
+    html += '</div>';
+    html += '<div class="rpe-tag">' + rpeLabel + '</div>';
+    html += '</div>';
+
+    if (ex.carga) {
+      html += '<div class="load-row">';
+      html += '<span class="load-label">Carga</span>';
+      html += '<div class="load-btn" data-load="' + ex.id + '" data-dir="-1">−</div>';
+      html += '<div class="load-val">' + loadVal + ' kg</div>';
+      html += '<div class="load-btn" data-load="' + ex.id + '" data-dir="1">+</div>';
+      html += '</div>';
+    }
+
+    card.innerHTML = html;
+    container.appendChild(card);
+  }
+
+  var checks = container.querySelectorAll('[data-check]');
+  for (var c = 0; c < checks.length; c++) {
+    checks[c].onclick = function() {
+      var key = this.getAttribute('data-check');
+      state.checks[key] = !state.checks[key];
+      saveState();
+      renderExercises();
+    };
+  }
+  var loadBtns = container.querySelectorAll('[data-load]');
+  for (var l = 0; l < loadBtns.length; l++) {
+    loadBtns[l].onclick = function() {
+      var id = this.getAttribute('data-load');
+      var dir = parseInt(this.getAttribute('data-dir'), 10);
+      var cur = state.loads[id] !== undefined ? state.loads[id] : 0;
+      cur = cur + dir * 1;
+      if (cur < 0) cur = 0;
+      state.loads[id] = cur;
+      saveState();
+      renderExercises();
+    };
+  }
+
+  var finBtn = document.getElementById('finish-btn');
+  if (state.finished[wk]) {
+    finBtn.textContent = 'Treino Finalizado ✓';
+    finBtn.classList.add('finished');
+  } else {
+    finBtn.textContent = 'Finalizar Treino';
+    finBtn.classList.remove('finished');
+  }
+}
+
+function changeWeek(dir) {
+  var next = state.currentWeek + dir;
+  if (next < 1 || next > TOTAL_WEEKS) return;
+  state.currentWeek = next;
+  saveState();
+  renderExercises();
+}
+
+function finishTreino() {
+  var wk = weekKey();
+  state.finished[wk] = true;
+  saveState();
+  renderExercises();
+  showToast('Treino finalizado! 🌸');
+}
+
+// ── GUIA ──────────────────────────────────────────────────────────────────
+var openGuideId = null;
+function renderGuide() {
+  var container = document.getElementById('guia-container');
+  var query = document.getElementById('guia-search').value.toLowerCase();
+  container.innerHTML = '';
+
+  var filtered = GUIA.filter(function(g) { return g.nome.toLowerCase().indexOf(query) !== -1; });
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty-guide">Nenhum exercício encontrado.</div>';
+    return;
+  }
+
+  for (var i = 0; i < filtered.length; i++) {
+    var g = filtered[i];
+    var isOpen = openGuideId === g.nome;
+    var card = document.createElement('div');
+    card.className = 'guide-card';
+    var html = '';
+    html += '<div class="guide-head" data-guide="' + g.nome + '">';
+    html += '<div class="ex-name">' + g.nome + '</div>';
+    html += '<div class="guide-chevron' + (isOpen ? ' open' : '') + '">▸</div>';
+    html += '</div>';
+    html += '<div class="guide-body' + (isOpen ? ' open' : '') + '">';
+    html += '<div class="guide-body-inner">';
+    html += '<div class="guide-row"><div class="guide-row-label">Como fazer</div><div class="guide-row-text">' + g.como + '</div></div>';
+    html += '<div class="guide-row"><div class="guide-row-label">Erro comum</div><div class="guide-row-text">' + g.erro + '</div></div>';
+    html += '<div class="guide-row"><div class="guide-row-label">Dica prática</div><div class="guide-row-text">' + g.dica + '</div></div>';
+    html += '</div></div>';
+    card.innerHTML = html;
+    container.appendChild(card);
+  }
+
+  var heads = container.querySelectorAll('[data-guide]');
+  for (var h = 0; h < heads.length; h++) {
+    heads[h].onclick = function() {
+      var name = this.getAttribute('data-guide');
+      openGuideId = (openGuideId === name) ? null : name;
+      renderGuide();
+    };
+  }
+}
+
+// ── BEM-ESTAR ─────────────────────────────────────────────────────────────
+function renderBemList(targetId, list) {
+  var el = document.getElementById(targetId);
+  var html = '';
+  for (var i = 0; i < list.length; i++) {
+    html += '<div class="bem-item"><span class="bem-item-name">' + list[i].nome + '</span><span class="bem-item-time">' + list[i].tempo + '</span></div>';
+  }
+  el.innerHTML = html;
+}
+
+function renderBemEstar() {
+  renderBemList('bem-mobilidade', MOBILIDADE);
+  renderBemList('bem-habitos', HABITOS);
+  renderBemList('bem-familia', FAMILIA);
+}
+
+// ── AVALIAÇÃO ─────────────────────────────────────────────────────────────
+function renderEval() {
+  var container = document.getElementById('eval-container');
+  container.innerHTML = '';
+
+  for (var w = 1; w <= TOTAL_WEEKS; w++) {
+    if (!state.evalNotas[w]) state.evalNotas[w] = {};
+    if (!state.checkin[w]) state.checkin[w] = {};
+    var notas = state.evalNotas[w];
+    var hasObs = state.evalObs[w] && state.evalObs[w].trim().length > 0;
+    var hasCheckin = Object.keys(state.checkin[w]).some(function(k) { return state.checkin[w][k]; });
+    var hasAny = Object.keys(notas).length > 0 || hasObs || hasCheckin;
+
+    var card = document.createElement('div');
+    card.className = 'eval-week-card';
+
+    var html = '<div class="eval-week-head">';
+    html += '<span class="eval-week-title">Semana ' + w + '</span>';
+    html += '<span class="eval-week-badge' + (hasAny ? ' saved' : '') + '">' + (hasAny ? 'Salvo' : 'Pendente') + '</span>';
+    html += '</div>';
+
+    for (var i = 0; i < EVAL_CATS.length; i++) {
+      var cat = EVAL_CATS[i];
+      var selected = notas[cat] || 0;
+      html += '<div class="eval-cat-block">';
+      html += '<div class="eval-cat-name">' + cat + '</div><div class="nota-row">';
+      for (var n = 1; n <= 5; n++) {
+        html += '<div class="nota-btn' + (selected === n ? ' selected' : '') + '" data-week="' + w + '" data-cat="' + cat + '" data-nota="' + n + '">' + n + '</div>';
+      }
+      html += '</div></div>';
+    }
+
+    for (var q = 0; q < CHECKIN_QS.length; q++) {
+      var question = CHECKIN_QS[q];
+      var val = state.checkin[w][question] || '';
+      html += '<div class="checkin-block"><div class="checkin-q">' + question + '</div>';
+      html += '<input class="checkin-input" data-week-q="' + w + '" data-q="' + q + '" value="' + val.replace(/"/g, '&quot;') + '"></div>';
+    }
+
+    html += '<textarea class="eval-week-obs" data-week-obs="' + w + '" rows="2" placeholder="Nota da semana...">' + (state.evalObs[w] || '') + '</textarea>';
+    html += '<button class="eval-week-save" data-week-save="' + w + '">Salvar Semana ' + w + '</button>';
+
+    card.innerHTML = html;
+    container.appendChild(card);
+  }
+
+  var notaBtns = container.querySelectorAll('[data-nota]');
+  for (var b = 0; b < notaBtns.length; b++) {
+    notaBtns[b].onclick = function() {
+      var wk = parseInt(this.getAttribute('data-week'), 10);
+      var cat = this.getAttribute('data-cat');
+      var nota = parseInt(this.getAttribute('data-nota'), 10);
+      if (!state.evalNotas[wk]) state.evalNotas[wk] = {};
+      state.evalNotas[wk][cat] = nota;
+      renderEval();
+    };
+  }
+
+  var saveBtns = container.querySelectorAll('[data-week-save]');
+  for (var s = 0; s < saveBtns.length; s++) {
+    saveBtns[s].onclick = function() {
+      var wk = this.getAttribute('data-week-save');
+      saveEval(wk);
+    };
+  }
+}
+
+function saveEval(week) {
+  var textarea = document.querySelector('[data-week-obs="' + week + '"]');
+  state.evalObs[week] = textarea ? textarea.value : '';
+
+  if (!state.checkin[week]) state.checkin[week] = {};
+  var inputs = document.querySelectorAll('[data-week-q="' + week + '"]');
+  for (var i = 0; i < inputs.length; i++) {
+    var qIdx = parseInt(inputs[i].getAttribute('data-q'), 10);
+    state.checkin[week][CHECKIN_QS[qIdx]] = inputs[i].value;
+  }
+
+  saveState();
+  showToast('Semana ' + week + ' salva!');
+  renderEval();
+}
+
+// ── PERFIL ────────────────────────────────────────────────────────────────
+function renderPerfil() {
+  document.getElementById('cur-weight').innerHTML = state.peso.toFixed(1) + '<span style="font-size:16px;color:var(--muted);"> kg</span>';
+}
+
+function adjustWeight(delta) {
+  state.peso = Math.max(30, state.peso + delta);
+  renderPerfil();
+}
+
+function saveWeight() {
+  saveState();
+  var btn = document.getElementById('weight-save-btn');
+  btn.textContent = 'Salvo ✓';
+  btn.classList.add('saved');
+  showToast('Peso atualizado!');
+  setTimeout(function() { btn.textContent = 'Salvar Peso'; btn.classList.remove('saved'); }, 1800);
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2200);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', function() {
+  setTimeout(async function() {
+    await loadFromFirebase();
+    document.getElementById('splash').classList.add('hide');
+    document.getElementById('app').classList.add('visible');
+    renderTreinoSwitch();
+    renderExercises();
+    renderPerfil();
+  }, 1400);
+});
+</script>
+</body>
+</html>
